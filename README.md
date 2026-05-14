@@ -72,6 +72,12 @@ Stores everything in SQLite and produces a three-panel chart:
 begins trending upward in earnest after Iran closes Hormuz (Mar 4), 
 and continues rising through the US naval blockade (Apr 13).*
 
+![Rolling Correlation](rolling_correlation.png)
+
+*30-day rolling correlation between WTI daily changes and 10Y breakeven daily changes. 
+Note the sharp drop around March 1 (as markets processed the initial shock), 
+followed by a sustained rise to 0.6+ after the blockade solidified.*
+
 ---
 
 ## Setup
@@ -93,12 +99,24 @@ pip install pandas yfinance fredapi requests beautifulsoup4 matplotlib python-do
 
 Create a `.env` file in the project root:
 
+FRED_API_KEY=your_fred_key
+NEWSAPI_KEY=your_newsapi_key
+
+Get your keys here:
+- FRED: https://fred.stlouisfed.org/docs/api/api_key.html
+- NewsAPI: https://newsapi.org/register
+
 ## Usage
 
 ```bash
+python main.py   # Run full pipeline (fetch → scrape → analyze → visualize)
+```
+
+Or run individual steps:
+```bash
 python fetch_data.py   # Pull market data → SQLite
-python scrape.py       # Fetch news headlines → SQLite  
-python analyze.py      # Run correlation analysis
+python scrape.py       # Fetch news headlines → SQLite
+python analyze.py      # Run correlation analysis + rolling correlation
 python visualize.py    # Generate three-panel chart
 ```
 
@@ -106,7 +124,13 @@ python visualize.py    # Generate three-panel chart
 
 ## Challenges & Notes to Self
 
-**1. APIs have hidden structure.**
+**1. Virtual environments matter immediately.**
+First error on Day 1: ran the script in `(base)` instead of 
+`(macro_project)` and got `ModuleNotFoundError`. The fix is 
+always the same — check the leftmost word in your terminal prompt 
+before running anything. `(base)` = wrong room.
+
+**2. APIs have hidden structure.**
 `yfinance` returns a MultiIndex DataFrame (two header rows: 
 "Price" and "Ticker"). Pandas `.join()` refused to merge it with 
 the single-index FRED data. Fix: `df.columns = df.columns.get_level_values(0)` 
@@ -114,7 +138,7 @@ to flatten before joining. Lesson: always `print(df.head())` and
 `print(df.columns)` before assuming a DataFrame is shaped the way 
 you think.
 
-**2. Free APIs have real limitations.**
+**3. Free APIs have real limitations.**
 NewsAPI free tier only returns recent articles — no historical 
 data. This means the news count panel can't show volume over time 
 without a paid subscription. Rather than pretend the limitation 
@@ -122,14 +146,16 @@ doesn't exist, I documented it and replaced the bar chart with a
 manually-curated event timeline. In real research, knowing *what 
 data you don't have* is as important as knowing what you do.
 
-**3. Market prices are forward-looking — always.**
-Oil prices started rising in January, two months before Iran 
-formally closed Hormuz on March 4. The market was pricing in the 
-probability of closure weeks before it happened. When the closure 
-was announced, prices *fell* — classic "buy the rumor, sell the news." 
-This is not a data anomaly. This is how markets work. 
+**4. Market prices are forward-looking — always.**
+The biggest conceptual surprise: oil prices started rising in 
+January, two months before Iran formally closed Hormuz on March 4. 
+The market was pricing in the probability of closure weeks before 
+it happened. When the closure was announced, prices *fell* — 
+classic "buy the rumor, sell the news." This is not a data anomaly. 
+This is how markets work. A fixed income researcher who forgets 
+this will always be confused by price action around macro events.
 
-**4. Correlation is not static.**
+**5. Correlation is not static.**
 r = 0.525 pre-blockade, r = 0.629 post-blockade. The relationship 
 between oil and inflation expectations is not a fixed constant — 
 it changes based on the macro regime. This is why static models 
