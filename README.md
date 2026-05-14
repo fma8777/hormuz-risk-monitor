@@ -106,13 +106,7 @@ python visualize.py    # Generate three-panel chart
 
 ## Challenges & Notes to Self
 
-**1. Virtual environments matter immediately.**
-First error on Day 1: ran the script in `(base)` instead of 
-`(macro_project)` and got `ModuleNotFoundError`. The fix is 
-always the same — check the leftmost word in your terminal prompt 
-before running anything. `(base)` = wrong room.
-
-**2. APIs have hidden structure.**
+**1. APIs have hidden structure.**
 `yfinance` returns a MultiIndex DataFrame (two header rows: 
 "Price" and "Ticker"). Pandas `.join()` refused to merge it with 
 the single-index FRED data. Fix: `df.columns = df.columns.get_level_values(0)` 
@@ -120,7 +114,7 @@ to flatten before joining. Lesson: always `print(df.head())` and
 `print(df.columns)` before assuming a DataFrame is shaped the way 
 you think.
 
-**3. Free APIs have real limitations.**
+**2. Free APIs have real limitations.**
 NewsAPI free tier only returns recent articles — no historical 
 data. This means the news count panel can't show volume over time 
 without a paid subscription. Rather than pretend the limitation 
@@ -128,16 +122,14 @@ doesn't exist, I documented it and replaced the bar chart with a
 manually-curated event timeline. In real research, knowing *what 
 data you don't have* is as important as knowing what you do.
 
-**4. Market prices are forward-looking — always.**
-The biggest conceptual surprise: oil prices started rising in 
-January, two months before Iran formally closed Hormuz on March 4. 
-The market was pricing in the probability of closure weeks before 
-it happened. When the closure was announced, prices *fell* — 
-classic "buy the rumor, sell the news." This is not a data anomaly. 
-This is how markets work. A fixed income researcher who forgets 
-this will always be confused by price action around macro events.
+**3. Market prices are forward-looking — always.**
+Oil prices started rising in January, two months before Iran 
+formally closed Hormuz on March 4. The market was pricing in the 
+probability of closure weeks before it happened. When the closure 
+was announced, prices *fell* — classic "buy the rumor, sell the news." 
+This is not a data anomaly. This is how markets work. 
 
-**5. Correlation is not static.**
+**4. Correlation is not static.**
 r = 0.525 pre-blockade, r = 0.629 post-blockade. The relationship 
 between oil and inflation expectations is not a fixed constant — 
 it changes based on the macro regime. This is why static models 
