@@ -76,17 +76,22 @@ and continues rising through the US naval blockade (Apr 13).*
 
 ## Setup
 
+**1. Clone the repository**
+```bash
+git clone https://github.com/fma8777/hormuz-risk-monitor.git
+cd hormuz-risk-monitor
+```
+
+**2. Create a conda environment**
 ```bash
 conda create -n macro_project python=3.11
 conda activate macro_project
-pip install pandas yfinance fredapi requests beautifulsoup4 matplotlib
+pip install pandas yfinance fredapi requests beautifulsoup4 matplotlib python-dotenv
 ```
 
-Add your API keys:
-- FRED: https://fred.stlouisfed.org/docs/api/api_key.html
-- NewsAPI: https://newsapi.org/register
+**3. Add your API keys**
 
-Then update the key variables in `fetch_data.py` and `scrape.py`.
+Create a `.env` file in the project root:
 
 ## Usage
 
