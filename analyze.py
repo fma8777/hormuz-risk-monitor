@@ -3,7 +3,7 @@ from fetch_data import fetch_fred_series, fetch_oil_price, merge_and_clean
 
 df = merge_and_clean(fetch_fred_series(), fetch_oil_price())
 
-# 封锁前后分开算
+# before and after the blockade announcement on April 13, 2026
 pre  = df[df.index < "2026-04-13"]
 post = df[df.index >= "2026-04-13"]
 
