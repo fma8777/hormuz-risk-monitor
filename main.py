@@ -17,10 +17,14 @@ if __name__ == "__main__":
     print(f"Hormuz Risk Monitor — {start.strftime('%Y-%m-%d %H:%M')}")
 
     run("fetch_data.py")
+    run("fetch_bdti.py")
     run("scrape.py")
     run("analyze.py")
     run("visualize.py")
+    run("lead_lag.py")
+    run("forecast.py")
+    run("irf_analysis.py")
 
     end = datetime.now()
     print(f"\nAll done in {(end - start).seconds} seconds.")
-    print(f"Charts: hormuz_monitor.png, rolling_correlation.png")
+    print(f"Charts: hormuz_monitor.png, rolling_correlation.png, lead_lag.png, forecast.png, irf.png")

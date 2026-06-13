@@ -17,6 +17,10 @@ key_events = {
     "2026-04-13": "US naval blockade",
     "2026-04-17": "Iran reopens briefly",
     "2026-05-06": "Project Freedom pause",
+    "2026-06-01": "Iran quits talks",
+    "2026-06-09": "US resumes strikes",
+    "2026-06-11": "Iran closes Hormuz again",
+    "2026-06-12": "Peace deal text agreed",
 }
 
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(13, 10), sharex=True)

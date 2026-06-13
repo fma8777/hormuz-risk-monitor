@@ -1,4 +1,5 @@
 from dotenv import load_dotenv
+from datetime import date
 import os
 load_dotenv()
 FRED_API_KEY = os.getenv("FRED_API_KEY")
@@ -10,7 +11,7 @@ from fredapi import Fred
 fred = Fred(api_key=FRED_API_KEY)
 
 START = "2026-01-01"
-END   = "2026-05-11"
+END = date.today().isoformat()
 
 def fetch_fred_series():
     """Fetch three FRED series: 10Y nominal yield, 10Y TIPS real yield, 10Y breakeven inflation."""
