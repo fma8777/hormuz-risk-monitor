@@ -1,82 +1,78 @@
 # Hormuz Risk Monitor
 
-*A fixed income macro research tool tracking geopolitical risk 
-transmission through oil markets to U.S. inflation expectations.*
+*A fixed income macro research tool tracking geopolitical risk transmission through oil markets to U.S. inflation expectations — with shipping stress as a leading indicator.*
 
 ---
 
 ## Motivation
 
-As a fixed income researcher, the central question I care about is:
-**what drives the yield curve?**
+As a fixed income researcher, the central question I care about is: **what drives the yield curve?**
 
-The 2026 Strait of Hormuz crisis offered a rare natural experiment.
-When Iran closed the strait on March 4, 2026 — cutting off ~20% of 
-global oil supply — it created a direct, observable shock to the 
-oil → inflation → Fed policy transmission chain.
+The 2026 Strait of Hormuz crisis offered a rare natural experiment. When Iran closed the strait on March 4, 2026 — cutting off ~20% of global oil supply — it created a direct, observable shock to the oil → inflation → Fed policy transmission chain.
 
-I built this tool to answer a specific question:
+This project answers two questions:
 
-> *Did the Hormuz blockade strengthen the pass-through from daily 
-> oil price moves to 10-year inflation expectations?*
-
-If it did, that has real implications for duration positioning: 
-a world where oil and breakevens move together more tightly is a 
-world where geopolitical risk directly reprices your bond portfolio 
-every day.
+> *1. Did the Hormuz blockade strengthen the pass-through from daily oil price moves to 10-year inflation expectations?*
+>
+> *2. Can tanker market stress predict future breakeven inflation moves — and if so, how quickly does the transmission happen?*
 
 ---
 
-## Key Finding
+## Key Findings
 
-**Yes — and the data shows it clearly.**
+**Finding 1 — The blockade strengthened oil-to-inflation pass-through by ~18%**
 
-| Period | Oil vs. Breakeven Correlation | N (trading days) |
-|--------|-------------------------------|-----------------|
-| Pre-blockade (Jan–Apr 12) | r = 0.525 | 68 |
-| Post-blockade (Apr 13–now) | r = 0.629 | 20 |
+| Period | Oil vs. Breakeven Correlation (r) | Trading Days |
+|--------|----------------------------------|--------------|
+| Pre-blockade (Jan–Apr 12) | 0.525 | 68 |
+| Post-blockade (Apr 13–Jun 13) | 0.622 | 43 |
 
-The pass-through from oil price changes to 10Y breakeven inflation 
-strengthened meaningfully after the blockade began. In practical 
-terms: post-April 13, every $1 move in WTI carries more information 
-about where inflation expectations are going than it did before.
+The rolling correlation has since climbed to 0.65–0.70 by June 2026, suggesting the regime shift is structural, not transitory.
 
-This matters for rates traders because breakeven inflation is a 
-direct input to nominal yield pricing. A tighter oil-breakeven 
-relationship means geopolitical headlines are moving bond markets 
-faster and more reliably than before the crisis.
+**Finding 2 — BWET leads 10-year breakeven by ~10 trading days**
 
----
+Using BWET (Breakwave Tanker & Shipping ETF) as a tradeable proxy for Hormuz shipping stress, the lead-lag analysis shows BWET's 5-day change predicts breakeven's 5-day change most strongly at a 10-day horizon (r = 0.277, R² = 7.7%). Lags were tested from 0 to 20 days — the signal peaks at 10 and decays sharply beyond, confirming this is the true transmission window.
 
-## What This Tool Does
+**Finding 3 — A BWET shock produces a statistically significant +5bp breakeven response on Day 2**
 
-Pulls and analyzes daily:
-- **WTI crude oil** — Yahoo Finance (`CL=F`)
-- **10Y nominal Treasury yield** — FRED (`DGS10`)
-- **10Y TIPS real yield** — FRED (`DFII10`)
-- **10Y breakeven inflation** — FRED (`T10YIE`)
-- **Hormuz/Iran news headlines** — NewsAPI
+The VAR Impulse Response Function shows that a 1-standard-deviation shock to tanker market stress produces a +5bp rise in 10-year breakeven on Day 2 [80% CI: +1.95, +8.13 bp], reverting to baseline by Day 6.
 
-Stores everything in SQLite and produces a three-panel chart:
-1. WTI oil price with key event markers
-2. 10Y breakeven vs. nominal yield
-3. Crisis event timeline
+*Practical implication: a rates desk monitoring BWET has approximately a 2-day window to position ahead of the breakeven move before the signal is fully priced in.*
 
 ---
 
-## The Chart
+## Charts
 
 ![Hormuz Risk Monitor](hormuz_monitor.png)
-
-*Dashed lines mark key events. Note how breakeven inflation (orange) 
-begins trending upward in earnest after Iran closes Hormuz (Mar 4), 
-and continues rising through the US naval blockade (Apr 13).*
+*Three-panel: WTI oil price, 10Y nominal yield vs breakeven, key crisis event timeline.*
 
 ![Rolling Correlation](rolling_correlation.png)
+*30-day rolling correlation between WTI daily changes and 10Y breakeven daily changes.*
 
-*30-day rolling correlation between WTI daily changes and 10Y breakeven daily changes. 
-Note the sharp drop around March 1 (as markets processed the initial shock), 
-followed by a sustained rise to 0.6+ after the blockade solidified.*
+![Lead-Lag Analysis](lead_lag.png)
+*BWET (tanker ETF) vs WTI vs 10Y breakeven: three-panel time series.*
+
+![IRF](irf.png)
+*Impulse Response Function: effect of a 1-SD BWET shock on 10Y breakeven over 10 days.*
+
+---
+
+## Pipeline
+
+```bash
+python main.py   # Run full pipeline (8 scripts, ~30 seconds)
+```
+
+| Script | What It Does |
+|--------|-------------|
+| `fetch_data.py` | Pull 10Y yields and WTI from FRED + Yahoo Finance → SQLite |
+| `fetch_bdti.py` | Pull BWET tanker ETF price from Yahoo Finance → SQLite |
+| `scrape.py` | Fetch Hormuz/Iran headlines from NewsAPI → SQLite |
+| `analyze.py` | Static + 30-day rolling oil-breakeven correlation |
+| `visualize.py` | Three-panel chart + event timeline |
+| `lead_lag.py` | Lead-lag analysis: BWET vs future breakeven (lags 0–20 days) |
+| `forecast.py` | VAR(2) 10-day breakeven forecast with confidence interval |
+| `irf_analysis.py` | Impulse Response Function: BWET shock → breakeven response |
 
 ---
 
@@ -88,79 +84,19 @@ git clone https://github.com/fma8777/hormuz-risk-monitor.git
 cd hormuz-risk-monitor
 ```
 
-**2. Create a conda environment**
+**2. Create environment**
 ```bash
 conda create -n macro_project python=3.11
 conda activate macro_project
-pip install pandas yfinance fredapi requests beautifulsoup4 matplotlib python-dotenv
+pip install pandas yfinance fredapi requests beautifulsoup4 matplotlib python-dotenv statsmodels
 ```
 
-**3. Add your API keys**
+**3. Add API keys**
 
-Create a `.env` file in the project root:
+Create a `.env` file in the project root.
 
-FRED_API_KEY=your_fred_key
-NEWSAPI_KEY=your_newsapi_key
-
-Get your keys here:
 - FRED: https://fred.stlouisfed.org/docs/api/api_key.html
 - NewsAPI: https://newsapi.org/register
-
-## Usage
-
-```bash
-python main.py   # Run full pipeline (fetch → scrape → analyze → visualize)
-```
-
-Or run individual steps:
-```bash
-python fetch_data.py   # Pull market data → SQLite
-python scrape.py       # Fetch news headlines → SQLite
-python analyze.py      # Run correlation analysis + rolling correlation
-python visualize.py    # Generate three-panel chart
-```
-
----
-
-## Challenges & Notes to Self
-
-**1. Virtual environments matter immediately.**
-First error on Day 1: ran the script in `(base)` instead of 
-`(macro_project)` and got `ModuleNotFoundError`. The fix is 
-always the same — check the leftmost word in your terminal prompt 
-before running anything. `(base)` = wrong room.
-
-**2. APIs have hidden structure.**
-`yfinance` returns a MultiIndex DataFrame (two header rows: 
-"Price" and "Ticker"). Pandas `.join()` refused to merge it with 
-the single-index FRED data. Fix: `df.columns = df.columns.get_level_values(0)` 
-to flatten before joining. Lesson: always `print(df.head())` and 
-`print(df.columns)` before assuming a DataFrame is shaped the way 
-you think.
-
-**3. Free APIs have real limitations.**
-NewsAPI free tier only returns recent articles — no historical 
-data. This means the news count panel can't show volume over time 
-without a paid subscription. Rather than pretend the limitation 
-doesn't exist, I documented it and replaced the bar chart with a 
-manually-curated event timeline. In real research, knowing *what 
-data you don't have* is as important as knowing what you do.
-
-**4. Market prices are forward-looking — always.**
-The biggest conceptual surprise: oil prices started rising in 
-January, two months before Iran formally closed Hormuz on March 4. 
-The market was pricing in the probability of closure weeks before 
-it happened. When the closure was announced, prices *fell* — 
-classic "buy the rumor, sell the news." This is not a data anomaly. 
-This is how markets work. A fixed income researcher who forgets 
-this will always be confused by price action around macro events.
-
-**5. Correlation is not static.**
-r = 0.525 pre-blockade, r = 0.629 post-blockade. The relationship 
-between oil and inflation expectations is not a fixed constant — 
-it changes based on the macro regime. This is why static models 
-break down during crises, and why discretionary judgment still 
-matters even in a data-driven world.
 
 ---
 
@@ -168,9 +104,11 @@ matters even in a data-driven world.
 
 | Data | Source | Notes |
 |------|--------|-------|
-| Treasury yields (nominal, real, breakeven) | FRED API | Free, 1-day lag |
-| WTI crude oil futures | Yahoo Finance (`CL=F`) | Free, futures-based |
-| News headlines | NewsAPI free tier | Recent only; historical requires paid access |
+| 10Y nominal yield, TIPS, breakeven | FRED API | Free, 1-day lag |
+| WTI crude oil futures | Yahoo Finance (`CL=F`) | Free |
+| BWET tanker ETF | Yahoo Finance (`BWET`) | Proxy for BDTI; tradeable |
+| News headlines | NewsAPI free tier | Recent articles only |
 
-For production use, historical news volume data would require 
-NewsAPI Pro, Bloomberg Terminal, or Refinitiv Eikon.
+**On BWET as a proxy:** The Baltic Dirty Tanker Index (BDTI) is the industry standard for tanker freight rates but requires a paid institutional subscription. BWET is a publicly traded ETF tracking tanker freight futures — a tradeable proxy that is more directly actionable for a rates desk than an industry index.
+
+**On the VAR forecast:** The point forecast is flat due to statistically insignificant coefficients — an honest result of 115 daily observations with noisy financial returns. The IRF is the more robust and informative output.
