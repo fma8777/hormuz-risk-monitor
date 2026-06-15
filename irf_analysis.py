@@ -29,12 +29,10 @@ results = model.fit(2)
 irf = results.irf(periods=10)
 
 # Extract BWET shock → breakeven response
-# irf.irfs shape: (periods+1, n_vars, n_vars)
-# [period, response_var, impulse_var]
-# bwet=0, wti=1, breakeven=2
-bwet_to_breakeven = irf.irfs[:, 2, 0]   # breakeven response to BWET shock
-lower = irf.irfs[:, 2, 0] - 1.28 * irf.stderr()[:, 2, 0]
-upper = irf.irfs[:, 2, 0] + 1.28 * irf.stderr()[:, 2, 0]
+bwet_to_breakeven = irf.orth_irfs[:, 2, 0]
+se = irf.stderr(orth=True)[:, 2, 0]
+lower = bwet_to_breakeven - 1.28 * se
+upper = bwet_to_breakeven + 1.28 * se
 
 periods = np.arange(len(bwet_to_breakeven))
 
