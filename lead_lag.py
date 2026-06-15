@@ -17,7 +17,7 @@ df["breakeven_chg"] = df["breakeven_10y"].diff(5)
 # ── Lead-lag analysis ──────────────────────────────────────────
 print("Lead-lag: BWET 5-day change vs future breakeven 5-day change\n")
 results = []
-for lag in [0, 1, 2, 3, 5, 10]:
+for lag in [0, 1, 2, 3, 5, 10, 15, 20]:
     r = df["bdti_chg"].corr(df["breakeven_chg"].shift(-lag))
     r2 = r ** 2
     results.append((lag, round(r, 3)))
