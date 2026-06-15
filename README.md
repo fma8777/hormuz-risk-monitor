@@ -33,9 +33,9 @@ The rolling correlation has since climbed to 0.65–0.70 by June 2026, suggestin
 
 Using BWET (Breakwave Tanker & Shipping ETF) as a tradeable proxy for Hormuz shipping stress, the lead-lag analysis shows BWET's 5-day change predicts breakeven's 5-day change most strongly at a 10-day horizon (r = 0.277, R² = 7.7%). Lags were tested from 0 to 20 days — the signal peaks at 10 and decays sharply beyond, confirming this is the true transmission window.
 
-**Finding 3 — A BWET shock produces a statistically significant +5bp breakeven response on Day 2**
+**Finding 3 — A BWET shock produces a statistically significant +0.39bp breakeven response on Day 2**
 
-The VAR Impulse Response Function shows that a 1-standard-deviation shock to tanker market stress produces a +5bp rise in 10-year breakeven on Day 2 [80% CI: +1.95, +8.13 bp], reverting to baseline by Day 6.
+The VAR Impulse Response Function (orthogonalized) shows that a 1-standard-deviation shock to tanker market stress produces a +0.39bp rise in 10-year breakeven on Day 2 [80% CI: +0.15, +0.63 bp], reverting to baseline by Day 6.
 
 *Practical implication: a rates desk monitoring BWET has approximately a 2-day window to position ahead of the breakeven move before the signal is fully priced in.*
 
@@ -72,7 +72,7 @@ python main.py   # Run full pipeline (8 scripts, ~30 seconds)
 | `visualize.py` | Three-panel chart + event timeline |
 | `lead_lag.py` | Lead-lag analysis: BWET vs future breakeven (lags 0–20 days) |
 | `forecast.py` | VAR(2) 10-day breakeven forecast with confidence interval |
-| `irf_analysis.py` | Impulse Response Function: BWET shock → breakeven response |
+| `irf_analysis.py` | Impulse Response Function: BWET shock → breakeven response (orthogonalized) |
 
 ---
 
@@ -112,3 +112,5 @@ Create a `.env` file in the project root.
 **On BWET as a proxy:** The Baltic Dirty Tanker Index (BDTI) is the industry standard for tanker freight rates but requires a paid institutional subscription. BWET is a publicly traded ETF tracking tanker freight futures — a tradeable proxy that is more directly actionable for a rates desk than an industry index.
 
 **On the VAR forecast:** The point forecast is flat due to statistically insignificant coefficients — an honest result of 115 daily observations with noisy financial returns. The IRF is the more robust and informative output.
+
+**On the IRF magnitude:** The IRF uses the orthogonalized specification (orth_irfs), which correctly standardizes the shock to exactly 1 SD. The non-orthogonalized version would overstate the magnitude approximately 12x.
